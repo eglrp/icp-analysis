@@ -1,6 +1,7 @@
 data/**
 results/**
 build/**
+.vscode/**
 
 # Prerequisites
 *.d
