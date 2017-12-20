@@ -27,3 +27,6 @@ We will not require any special hardware
 Our team consists of:
 • Neha Das
 • Sumit Dugar
+
+
+http://ceres-solver.org/nnls_solving.html
