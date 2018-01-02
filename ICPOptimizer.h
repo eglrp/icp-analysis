@@ -220,6 +220,9 @@ public:
 		m_nIterations = nIterations;
 	}
 
+	//TODO: Write a function for projective range search.
+
+	//Nearest neighbor search.
 	Matrix4f estimatePose(const PointCloud& source, const PointCloud& target, Matrix4f initialPose = Matrix4f::Identity()) {
 		// Build the index of the FLANN tree (for fast nearest neighbor lookup).
 		m_nearestNeighborSearch->buildIndex(target.getPoints());
