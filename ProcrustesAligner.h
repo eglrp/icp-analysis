@@ -26,6 +26,7 @@ public:
 private:
 	Vector3f computeMean(const std::vector<Vector3f>& points) {
 		// TODO: Compute the mean of input points.
+
 		Vector3f mean = Vector3f::Zero();
 		for(int i=0; i<points.size(); i++){
 			mean.x() += points[i].x();
@@ -36,6 +37,7 @@ private:
 		mean.y() /= points.size();
 		mean.z() /= points.size();
 		return mean;
+
 	}
 
 	Matrix3f estimateRotation(const std::vector<Vector3f>& sourcePoints, const Vector3f& sourceMean, const std::vector<Vector3f>& targetPoints, const Vector3f& targetMean) {

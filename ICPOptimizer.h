@@ -10,6 +10,10 @@
 #include "SimpleMesh.h"
 #include "NearestNeighbor.h"
 #include "PointCloud.h"
+#include "ProcrustesAligner.h"
+
+#define SVD		1
+#define LM		0
 
 
 /**
@@ -110,6 +114,7 @@ public:
 		// class.
 		// Important: Ceres automatically squares the cost function.
 		T poseArray[6];
+		//memcpy(poseArray, pose, sizeof(pose));
 		poseArray[0] = pose[0];
 		poseArray[1] = pose[1];
 		poseArray[2] = pose[2];
@@ -117,12 +122,19 @@ public:
 		poseArray[4] = pose[4];
 		poseArray[5] = pose[5];
 		PoseIncrement<T> poseIncrement = PoseIncrement<T>(poseArray);
+		//std::cout<<"PoseArray: "<<poseArray[0] << ","<<poseArray[1] << ","<<poseArray[2] << ","<<poseArray[3] << ","<<poseArray[4] << ","<<poseArray[5] << ","<<std::endl;
 		T transformedSourcePoint[3];
 		T sourcePoint[3];
 		sourcePoint[0] = (T)m_sourcePoint(0);
 		sourcePoint[1] = (T)m_sourcePoint(1);
 		sourcePoint[2] = (T)m_sourcePoint(2);
 		poseIncrement.apply(sourcePoint, transformedSourcePoint);
+		//std::cout<<"Source point 0: "<<sourcePoint[0]<<", Transformed point 0: "<<transformedSourcePoint[0]<<std::endl;
+		//Vector3f transformedSourcePointVec;
+		//transformedSourcePointVec(0) = (float)transformedSourcePoint[0];
+		//transformedSourcePointVec(1) = (float)transformedSourcePoint[1];
+		//transformedSourcePointVec(2) = (float)transformedSourcePoint[2];
+		//Vector3f diff = transformedSourcePointVec - m_targetPoint;
 		residuals[0] = transformedSourcePoint[0] - (T)m_targetPoint(0);
 		residuals[1] = transformedSourcePoint[1] - (T)m_targetPoint(1);
 		residuals[2] = transformedSourcePoint[2] - (T)m_targetPoint(2);
@@ -159,7 +171,9 @@ public:
 		// increment (pose parameters) to the source point, you can use the PoseIncrement
 		// class.
 		// Important: Ceres automatically squares the cost function.
+
 		T poseArray[6];
+		//memcpy(poseArray, pose, sizeof(pose));
 		poseArray[0] = pose[0];
 		poseArray[1] = pose[1];
 		poseArray[2] = pose[2];
@@ -173,12 +187,18 @@ public:
 		sourcePoint[1] = (T)m_sourcePoint(1);
 		sourcePoint[2] = (T)m_sourcePoint(2);
 		poseIncrement.apply(sourcePoint, transformedSourcePoint);
+		//Vector3f transformedSourcePointVec;
+		//transformedSourcePointVec(0) = (float)transformedSourcePoint[0];
+		//transformedSourcePointVec(1) = (float)transformedSourcePoint[1];
+		//transformedSourcePointVec(2) = (float)transformedSourcePoint[2];
+		//Vector3f diff = transformedSourcePointVec - m_targetPoint;
 		T res_part[3];
 		res_part[0] = (transformedSourcePoint[0] - (T)m_targetPoint(0)) * (T)m_targetNormal(0);
 		res_part[1] = (transformedSourcePoint[1] - (T)m_targetPoint(1)) * (T)m_targetNormal(1);
 		res_part[2] = (transformedSourcePoint[2] - (T)m_targetPoint(2)) * (T)m_targetNormal(2);
 
 		residuals[0] = res_part[0] + res_part[1] + res_part[2];
+		
 		return true;
 	}
 
@@ -220,9 +240,6 @@ public:
 		m_nIterations = nIterations;
 	}
 
-	//TODO: Write a function for projective range search.
-
-	//Nearest neighbor search.
 	Matrix4f estimatePose(const PointCloud& source, const PointCloud& target, Matrix4f initialPose = Matrix4f::Identity()) {
 		// Build the index of the FLANN tree (for fast nearest neighbor lookup).
 		m_nearestNeighborSearch->buildIndex(target.getPoints());
@@ -243,27 +260,50 @@ public:
 
 			auto transformedPoints = transformPoints(source.getPoints(), estimatedPose);
 			auto matches = m_nearestNeighborSearch->queryMatches(transformedPoints);
+			std::cout << "Number of matched points ..." << matches.size() << std::endl;
+
 
 			clock_t end = clock();
 			double elapsedSecs = double(end - begin) / CLOCKS_PER_SEC;
 			std::cout << "Completed in " << elapsedSecs << " seconds." << std::endl;
+			Matrix4f matrix;
+			if(LM)
+			{
+				// Prepare point-to-point and point-to-plane constraints.
+				ceres::Problem problem;
+				prepareConstraints(transformedPoints, target.getPoints(), target.getNormals(), matches, poseIncrement, problem);
 
-			// Prepare point-to-point and point-to-plane constraints.
-			ceres::Problem problem;
-			prepareConstraints(transformedPoints, target.getPoints(), target.getNormals(), matches, poseIncrement, problem);
+				// Configure options for the solver.
+				ceres::Solver::Options options;
+				configureSolver(options);
 
-			// Configure options for the solver.
-			ceres::Solver::Options options;
-			configureSolver(options);
+				// Run the solver (for one iteration).
+				ceres::Solver::Summary summary;
+				ceres::Solve(options, &problem, &summary);
+				std::cout << summary.BriefReport() << std::endl;
+				//std::cout << summary.FullReport() << std::endl;
 
-			// Run the solver (for one iteration).
-			ceres::Solver::Summary summary;
-			ceres::Solve(options, &problem, &summary);
-			std::cout << summary.BriefReport() << std::endl;
-			//std::cout << summary.FullReport() << std::endl;
-
-			// Update the current pose estimate (we always update the pose from the left, using left-increment notation).
-			Matrix4f matrix = PoseIncrement<double>::convertToMatrix(poseIncrement);
+				// Update the current pose estimate (we always update the pose from the left, using left-increment notation).
+				matrix = PoseIncrement<double>::convertToMatrix(poseIncrement);
+			}
+			else if(SVD)
+			{
+				std::cout << "Enter SVD "<< std::endl;
+				std::vector<Vector3f> sourcePoints;
+				std::vector<Vector3f> targetPointsMatch;
+				std::vector<Vector3f> targetPoints = target.getPoints();
+				const unsigned nPoints = transformedPoints.size();
+				for (unsigned i = 0; i < nPoints; ++i) {
+					const auto match = matches[i];
+					if (match.idx >= 0) {
+						sourcePoints.push_back(transformedPoints[i]);
+						targetPointsMatch.push_back(targetPoints[match.idx]);
+					}
+				}
+				ProcrustesAligner aligner;
+				std::cout << "	Start Estimating Pose "<< std::endl;
+				matrix = aligner.estimatePose(sourcePoints, targetPointsMatch);
+			}
 			estimatedPose = matrix * estimatedPose;
 			poseIncrement.setZero();
 
@@ -311,14 +351,16 @@ private:
 				const auto& sourcePoint = sourcePoints[i];
 				const auto& targetPoint = targetPoints[match.idx];
 
-				if (!sourcePoint.allFinite() && !targetPoint.allFinite())
+				if (!sourcePoint.allFinite() && !targetPoint.allFinite()) 
 					continue;
+
+				double* pose = poseIncrement.getData();
 
 				// TODO: Create a new point-to-point cost function and add it as constraint (i.e. residual block) 
 				// to the Ceres problem.
-				double* pose = poseIncrement.getData();
 				ceres::CostFunction* pointToPointCost = PointToPointConstraint::create(sourcePoint,targetPoint,1);
 				problem.AddResidualBlock(pointToPointCost, NULL, pose);
+
 
 				if (m_bUsePointToPlaneConstraints) {
 					const auto& targetNormal = targetNormals[match.idx];
@@ -330,6 +372,7 @@ private:
 					// to the Ceres problem.
 					ceres::CostFunction* pointToPlaneCost = PointToPlaneConstraint::create(sourcePoint,targetPoint,targetNormal,1);
 					problem.AddResidualBlock(pointToPlaneCost, NULL, pose);
+
 				}
 			}
 		}
