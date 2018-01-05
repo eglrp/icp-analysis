@@ -44,32 +44,36 @@ private:
 		// TODO: Estimate the rotation from source to target points, following the Procrustes algorithm. 
 		// To compute the singular value decomposition you can use JacobiSVD() from Eigen.
 		Matrix3f rotation = Matrix3f::Identity();
-		MatrixXf X(sourcePoints.size(), 3);
-		MatrixXf _X(targetPoints.size(), 3);
-		for(int i=0; i<sourcePoints.size(); i++){
-			Vector3f normalizedPoint = sourcePoints[i] - sourceMean;
+		MatrixXf X(targetPoints.size(), 3);
+		MatrixXf _X(sourcePoints.size(), 3);
+		for(int i=0; i<targetPoints.size(); i++){
+			Vector3f normalizedPoint = targetPoints[i] - targetMean;
 			X(i,0) = normalizedPoint.x();
 			X(i,1) = normalizedPoint.y();
 			X(i,2) = normalizedPoint.z();
 		}
 
-		for(int i=0; i<targetPoints.size(); i++){
-			Vector3f normalizedPoint = targetPoints[i] - targetMean;
+		for(int i=0; i<sourcePoints.size(); i++){
+			Vector3f normalizedPoint = sourcePoints[i] - sourceMean;
 			_X(i,0) = normalizedPoint.x();
 			_X(i,1) = normalizedPoint.y();
 			_X(i,2) = normalizedPoint.z();
 		}
 		
 		Matrix3f m = X.transpose()*_X;
-		JacobiSVD<MatrixXf> svd(m);
+		// std::cout<<m<<std::endl;
+		JacobiSVD<MatrixXf> svd(m, ComputeFullU | ComputeFullV);
+		// std::cout<<svd.matrixU()<<std::endl;
+		// std::cout<<svd.matrixV().transpose()<<std::endl;
 		rotation = svd.matrixU()*svd.matrixV().transpose();
+		std::cout<<rotation<<std::endl;
 		return rotation;
 	}
 
 	Vector3f computeTranslation(const Vector3f& sourceMean, const Vector3f& targetMean, const Matrix3f& rotation) {
 		// TODO: Compute the translation vector from source to target opints.
 		Vector3f translation = Vector3f::Zero();
-		translation = sourceMean - targetMean;
+		translation = -(rotation * sourceMean) + targetMean;
 		return translation;
 	}
 };
