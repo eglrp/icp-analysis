@@ -12,8 +12,8 @@
 #include "PointCloud.h"
 #include "ProcrustesAligner.h"
 
-#define PROJECTIVE			1
-#define NEAREST_NEIGHBOR	0
+#define PROJECTIVE			0
+#define NEAREST_NEIGHBOR	1
 
 #define SVD		0
 #define LM		1
@@ -251,7 +251,7 @@ public:
 		m_nIterations = nIterations;
 	}
 
-	Matrix4f estimatePose(const PointCloud& source, const PointCloud& target, Matrix4f initialPose = Matrix4f::Identity()) {
+	Matrix4f estimatePose(const PointCloud& source, const PointCloud& target, Matrix4f initialPose = Matrix4f::Identity(), int debugFrame = -1) {
 		// Build the index of the FLANN tree (for fast nearest neighbor lookup).
 		m_nearestNeighborSearch->buildIndex(target.getPoints());
 		if(PROJECTIVE)
@@ -279,6 +279,25 @@ public:
 			std::cout << "Estimated pose: " << std::endl << estimatedPose << std::endl;
 			auto matches = m_nearestNeighborSearch->queryMatches(transformedPoints);
 
+			if((debugFrame > -1) && (i == 0))
+			{	
+				// SimpleMesh currentDepthMesh{ sensor, currentCameraPose, 0.1f };
+				// SimpleMesh currentCameraMesh = SimpleMesh::camera(currentCameraPose, 0.0015f);
+				// SimpleMesh resultingMesh = SimpleMesh::joinMeshes(currentDepthMesh, currentCameraMesh, Matrix4f::Identity());
+				SimpleMesh resultingMesh;
+				std::vector<Vector3f> targetPoints = target.getPoints();
+				for (unsigned j = 0; j < transformedPoints.size(); ++j) { // sourcePoints.size()
+					const auto match = matches[j];
+					if (match.idx >= 0) {
+						const auto& sourcePoint = transformedPoints[j];
+						const auto& targetPoint = targetPoints[match.idx];
+						resultingMesh = SimpleMesh::joinMeshes(SimpleMesh::cylinder(sourcePoint, targetPoint, 0.002f, 2, 15), resultingMesh, Matrix4f::Identity());
+					}
+				}
+
+				resultingMesh.writeMesh(PROJECT_DIR + std::string("/results/correspondences") + std::to_string(debugFrame) + std::string(".off"));
+
+			}
 
 			clock_t end = clock();
 			double elapsedSecs = double(end - begin) / CLOCKS_PER_SEC;
