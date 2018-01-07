@@ -11,8 +11,8 @@
 #define USE_POINT_TO_PLANE	1
 
 #define RUN_PROCRUSTES		0
-#define RUN_SHAPE_ICP		1
-#define RUN_SEQUENCE_ICP	0
+#define RUN_SHAPE_ICP		0
+#define RUN_SEQUENCE_ICP	1
 
 void debugCorrespondenceMatching() {
 	// Load the source and target mesh.
@@ -90,7 +90,7 @@ int alignBunnyWithProcrustes() {
 	// Estimate the pose from source to target mesh with Procrustes alignment.
 	ProcrustesAligner aligner;
 	Matrix4f estimatedPose = aligner.estimatePose(sourcePoints, targetPoints);
-	std::cout << "Estimated pose: " << std::endl << estimatedPose << std::endl;
+	std::cout << "Estimated pose Procrustes: " << std::endl << estimatedPose << std::endl;
 
 	// Visualize the resulting joined mesh. We add triangulated spheres for point matches.
 	SimpleMesh resultingMesh = SimpleMesh::joinMeshes(sourceMesh, targetMesh, estimatedPose);
@@ -152,6 +152,7 @@ int alignBunnyWithICP() {
 int reconstructRoom() {
 	std::string filenameIn = PROJECT_DIR + std::string("/data/rgbd_dataset_freiburg1_xyz/");
 	std::string filenameBaseOut = PROJECT_DIR + std::string("/results/mesh_");
+	bool saveAll = false;
 
 	// Load video
 	std::cout << "Initialize virtual sensor..." << std::endl;
@@ -163,7 +164,11 @@ int reconstructRoom() {
 
 	// We store a first frame as a reference frame. All next frames are tracked relatively to the first frame.
 	sensor.processNextFrame();
-	PointCloud target{ sensor.getDepth(), sensor.getDepthIntrinsics(), sensor.getDepthExtrinsics(), sensor.getDepthImageWidth(), sensor.getDepthImageHeight() };
+	if(PROJECTIVE)
+		saveAll = true;
+		
+	PointCloud target{ sensor.getDepth(), sensor.getDepthIntrinsics(), sensor.getDepthExtrinsics(), sensor.getDepthImageWidth(), sensor.getDepthImageHeight(), 1, 0.1f, saveAll };
+	//std::cout<<"Depth Extrinsic for target frame : "<<sensor.getDepthExtrinsics();
 	
 	// Setup the optimizer.
 	ICPOptimizer optimizer;
@@ -188,6 +193,8 @@ int reconstructRoom() {
 		float* depthMap = sensor.getDepth();
 		Matrix3f depthIntrinsics = sensor.getDepthIntrinsics();
 		Matrix4f depthExtrinsics = sensor.getDepthExtrinsics();
+
+		//std::cout<<"Depth Extrinsic for source frame "<<i<<" : "<<depthExtrinsics;
 
 		// Estimate the current camera pose from source to target mesh with ICP optimization.
 		// We downsample the source image to speed up the correspondence matching.

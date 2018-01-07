@@ -18,12 +18,113 @@ public:
 
 	virtual void buildIndex(const std::vector<Eigen::Vector3f>& targetPoints) = 0;
 	virtual std::vector<Match> queryMatches(const std::vector<Vector3f>& transformedPoints) = 0;
+	virtual void setDepthIntrinsicsAndRes(Matrix3f depthIntrinsics, unsigned width, unsigned height) = 0;
 
 protected:
 	float m_maxDistance;
 
 	NearestNeighborSearch() : m_maxDistance{ 0.005f } {}
 };
+
+
+/**
+ * Projective Correspondences.
+ */
+class ProjectiveCorrespondences : public NearestNeighborSearch {
+public:
+	ProjectiveCorrespondences() : NearestNeighborSearch() {}
+
+	void buildIndex(const std::vector<Eigen::Vector3f>& targetPoints) {
+		m_points = targetPoints;
+	}
+
+	std::vector<Match> queryMatches(const std::vector<Vector3f>& transformedPoints) {
+		const unsigned nMatches = transformedPoints.size();
+		std::vector<Match> matches(nMatches);
+		const unsigned nTargetPoints = m_points.size();
+		std::cout << "total possible nMatches: " << nMatches << std::endl;
+		std::cout << "nTargetPoints: " << nTargetPoints << std::endl;
+
+		int match_cnt = 0;
+
+		#pragma omp parallel for
+		for (int i = 0; i < nMatches; i++) {
+			matches[i] = getClosestPoint(transformedPoints[i]);
+			if(matches[i].idx >= 0)
+				match_cnt++;
+		}
+		std::cout << "total actual nMatches: " << match_cnt << std::endl;
+
+		return matches;
+	}
+
+	void setDepthIntrinsicsAndRes(Matrix3f depthIntrinsics, unsigned width, unsigned height) {
+		m_depthIntrinsics = depthIntrinsics;
+		m_width = width;
+		m_height = height;
+	}
+
+private:
+	std::vector<Eigen::Vector3f> m_points;
+
+	unsigned m_width = 0;
+	unsigned m_height = 0;	
+	Matrix3f m_depthIntrinsics = Matrix3f::Zero();
+
+	Match getClosestPoint(const Vector3f& p) {
+		int idx = -1;
+		int u=-1,v=-1;
+		float dist, fovX, fovY, cX, cY;
+		// float minDist = std::numeric_limits<float>::max();
+		// for (unsigned int i = 0; i < m_points.size(); ++i) {
+		// 	float dist = (p - m_points[i]).norm();
+		// 	if (minDist > dist) {
+		// 		idx = i;
+		// 		minDist = dist;
+		// 	}
+		// }
+
+		if(m_height == 0)
+		{
+			std::cout<<"m_height = "<<m_height<<"\nm_width = "<<m_width<<"\ndepthIntrinsics =\n"<<m_depthIntrinsics<<std::endl;
+			return Match{ -1, 0.f };
+		}
+
+		fovX = m_depthIntrinsics(0, 0);
+		fovY = m_depthIntrinsics(1, 1);
+		cX = m_depthIntrinsics(0, 2);
+		cY = m_depthIntrinsics(1, 2);
+
+		u = cX + ((p.x()*fovX)/p.z());
+		v = cY + ((p.y()*fovY)/p.z());
+
+		idx = v*m_height + u;
+
+		if(idx<0 || idx>=m_points.size())
+		{
+			// std::cout<<"index: "<<idx;
+			// std::cout<<"; u = "<<u;
+			// std::cout<<"; v = "<<v;
+			// std::cout<<"; p.x() = "<<p.x();
+			// std::cout<<"; p.y() = "<<p.y();
+			// std::cout<<"; p.z() = "<<p.z();
+			// std::cout<<"; fovX = "<<fovX;
+			// std::cout<<"; fovY = "<<fovY;
+			// std::cout<<"; cX = "<<cX;
+			// std::cout<<"; cY = "<<cY;
+			// std::cout<<std::endl;
+			return Match{ -1, 0.f };
+		}
+
+		dist = (p - m_points[idx]).norm();
+
+		if (m_points[idx].allFinite()&&(dist <= m_maxDistance))
+			return Match{ idx, 1.f };
+		else
+			return Match{ -1, 0.f };
+	}
+};
+
 
 
 /**
@@ -52,8 +153,18 @@ public:
 		return matches;
 	}
 
+	void setDepthIntrinsicsAndRes(Matrix3f depthIntrinsics, unsigned width, unsigned height) {
+			m_depthIntrinsics = depthIntrinsics;
+			m_width = width;
+			m_height = height;
+	}
+
 private:
 	std::vector<Eigen::Vector3f> m_points;
+
+	unsigned m_width = 0;
+	unsigned m_height = 0;	
+	Matrix3f m_depthIntrinsics = Matrix3f::Zero();
 
 	Match getClosestPoint(const Vector3f& p) {
 		int idx = -1;
@@ -159,7 +270,18 @@ public:
 		return matches;
 	}
 
+	void setDepthIntrinsicsAndRes(Matrix3f depthIntrinsics, unsigned width, unsigned height) {
+		m_depthIntrinsics = depthIntrinsics;
+		m_width = width;
+		m_height = height;
+	}
+
 private:
+
+	unsigned m_width = 0;
+	unsigned m_height = 0;	
+	Matrix3f m_depthIntrinsics = Matrix3f::Zero();
+
 	int m_nTrees;
 	flann::Index<flann::L2<float>>* m_index;
 	float* m_flatPoints;

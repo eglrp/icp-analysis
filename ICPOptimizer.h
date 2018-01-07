@@ -12,8 +12,11 @@
 #include "PointCloud.h"
 #include "ProcrustesAligner.h"
 
-#define SVD		1
-#define LM		0
+#define PROJECTIVE			1
+#define NEAREST_NEIGHBOR	0
+
+#define SVD		0
+#define LM		1
 
 
 /**
@@ -224,9 +227,17 @@ class ICPOptimizer {
 public:
 	ICPOptimizer() : 
 		m_bUsePointToPlaneConstraints{ false },
-		m_nIterations{ 20 },
-		m_nearestNeighborSearch{ std::make_unique<NearestNeighborSearchFlann>() }
-	{ }
+		m_nIterations{ 20 }
+		//#ifdef PROJECTIVE
+		//#else
+		//m_nearestNeighborSearch{ std::make_unique<NearestNeighborSearchFlann>()}
+		//#endif 
+	{ 
+		if(PROJECTIVE)
+			m_nearestNeighborSearch = std::make_unique<ProjectiveCorrespondences>();
+		else
+			m_nearestNeighborSearch = std::make_unique<NearestNeighborSearchFlann>();
+	}
 
 	void setMatchingMaxDistance(float maxDistance) {
 		m_nearestNeighborSearch->setMatchingMaxDistance(maxDistance);
@@ -243,6 +254,11 @@ public:
 	Matrix4f estimatePose(const PointCloud& source, const PointCloud& target, Matrix4f initialPose = Matrix4f::Identity()) {
 		// Build the index of the FLANN tree (for fast nearest neighbor lookup).
 		m_nearestNeighborSearch->buildIndex(target.getPoints());
+		if(PROJECTIVE)
+		{
+			Matrix3f depthIntrinsics = target.getDepthIntrinsics();
+			m_nearestNeighborSearch->setDepthIntrinsicsAndRes(depthIntrinsics, target.getWidth(), target.getHeight());
+		}
 
 		// The initial estimate can be given as an argument.
 		Matrix4f estimatedPose = initialPose;
@@ -253,14 +269,15 @@ public:
 		auto poseIncrement = PoseIncrement<double>(incrementArray);
 		poseIncrement.setZero();
 
-		for (int i = 0; i < m_nIterations; ++i) {
+		for (int i = 0; i < 2; ++i) {
 			// Compute the matches.
+			std::cout << "iteration ..." << i <<std::endl;
 			std::cout << "Matching points ..." << std::endl;
 			clock_t begin = clock();
 
 			auto transformedPoints = transformPoints(source.getPoints(), estimatedPose);
+			std::cout << "Estimated pose: " << std::endl << estimatedPose << std::endl;
 			auto matches = m_nearestNeighborSearch->queryMatches(transformedPoints);
-			std::cout << "Number of matched points ..." << matches.size() << std::endl;
 
 
 			clock_t end = clock();
@@ -292,14 +309,17 @@ public:
 				std::vector<Vector3f> sourcePoints;
 				std::vector<Vector3f> targetPointsMatch;
 				std::vector<Vector3f> targetPoints = target.getPoints();
+				int match_count=0;
 				const unsigned nPoints = transformedPoints.size();
 				for (unsigned i = 0; i < nPoints; ++i) {
 					const auto match = matches[i];
 					if (match.idx >= 0) {
 						sourcePoints.push_back(transformedPoints[i]);
 						targetPointsMatch.push_back(targetPoints[match.idx]);
+						match_count++;
 					}
 				}
+				std::cout << "Number of matched points ..." << match_count << std::endl;
 				ProcrustesAligner aligner;
 				std::cout << "	Start Estimating Pose "<< std::endl;
 				matrix = aligner.estimatePose(sourcePoints, targetPointsMatch);

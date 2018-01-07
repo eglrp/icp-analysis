@@ -33,13 +33,20 @@ public:
 		}
 	}
 
-	PointCloud(float* depthMap, const Matrix3f& depthIntrinsics, const Matrix4f& depthExtrinsics, const unsigned width, const unsigned height, unsigned downsampleFactor = 1, float maxDistance = 0.1f) {
+	PointCloud(float* depthMap, const Matrix3f& depthIntrinsics, const Matrix4f& depthExtrinsics, const unsigned width, const unsigned height, unsigned downsampleFactor = 1, float maxDistance = 0.1f, bool saveAll=false) {
 		// Get depth intrinsics.
 		float fovX = depthIntrinsics(0, 0);
 		float fovY = depthIntrinsics(1, 1);
 		float cX = depthIntrinsics(0, 2);
 		float cY = depthIntrinsics(1, 2);
 		const float maxDistanceHalved = maxDistance / 2.f;
+
+		if(saveAll)
+		{
+			m_depthIntrinsics = depthIntrinsics;
+			m_width = width;
+			m_height = height;
+		}
 
 		// Compute inverse depth extrinsics.
 		Matrix4f depthExtrinsicsInv = depthExtrinsics.inverse();
@@ -112,7 +119,7 @@ public:
 			const auto& point = pointsTmp[i];
 			const auto& normal = normalsTmp[i];
 
-			if (point.allFinite() && normal.allFinite()) {
+			if (saveAll || (point.allFinite() && normal.allFinite())) {
 				m_points.push_back(point);
 				m_normals.push_back(normal);
 			}
@@ -197,6 +204,30 @@ public:
 		return m_normals;
 	}
 
+	Matrix3f getDepthIntrinsics() {
+		return m_depthIntrinsics;
+	}
+
+	const Matrix3f getDepthIntrinsics() const {
+		return m_depthIntrinsics;
+	}
+
+	unsigned getWidth() {
+		return m_width;
+	}
+
+	const unsigned getWidth() const {
+		return m_width;
+	}
+
+	unsigned getHeight() {
+		return m_height;
+	}
+
+	const unsigned getHeight() const {
+		return m_height;
+	}
+
 	unsigned int getClosestPoint(Vector3f& p) {
 		unsigned int idx = 0;
 
@@ -215,5 +246,8 @@ public:
 private:
 	std::vector<Vector3f> m_points;
 	std::vector<Vector3f> m_normals;
+	Matrix3f m_depthIntrinsics = Matrix3f::Zero();
+	unsigned m_width=0;
+	unsigned m_height=0;
 
 };
