@@ -269,7 +269,7 @@ public:
 		auto poseIncrement = PoseIncrement<double>(incrementArray);
 		poseIncrement.setZero();
 
-		for (int i = 0; i < 2; ++i) {
+		for (int i = 0; i < m_nIterations; ++i) {
 			// Compute the matches.
 			std::cout << "iteration ..." << i <<std::endl;
 			std::cout << "Matching points ..." << std::endl;
