@@ -98,28 +98,31 @@ private:
 		u = cX + ((p.x()*fovX)/p.z());
 		v = cY + ((p.y()*fovY)/p.z());
 
-		idx = v*m_height + u;
-
+		idx = v*m_width + u;
+		//idx = u*m_height + v;
 		if(idx<0 || idx>=m_points.size())
 		{
-			// std::cout<<"index: "<<idx;
-			// std::cout<<"; u = "<<u;
-			// std::cout<<"; v = "<<v;
-			// std::cout<<"; p.x() = "<<p.x();
-			// std::cout<<"; p.y() = "<<p.y();
-			// std::cout<<"; p.z() = "<<p.z();
-			// std::cout<<"; fovX = "<<fovX;
-			// std::cout<<"; fovY = "<<fovY;
-			// std::cout<<"; cX = "<<cX;
-			// std::cout<<"; cY = "<<cY;
-			// std::cout<<std::endl;
+			std::cout<<"index: "<<idx;
+			std::cout<<"; u = "<<u;
+			std::cout<<"; v = "<<v;
+			std::cout<<"; p.x() = "<<p.x();
+			std::cout<<"; p.y() = "<<p.y();
+			std::cout<<"; p.z() = "<<p.z();
+			std::cout<<"; fovX = "<<fovX;
+			std::cout<<"; fovY = "<<fovY;
+			std::cout<<"; cX = "<<cX;
+			std::cout<<"; cY = "<<cY;
+			std::cout<<std::endl;
 			return Match{ -1, 0.f };
 		}
 
 		dist = (p - m_points[idx]).norm();
 
 		if (m_points[idx].allFinite()&&(dist <= m_maxDistance))
+		{
+			//std::cout<<"index: "<<idx<<std::endl;
 			return Match{ idx, 1.f };
+		}
 		else
 			return Match{ -1, 0.f };
 	}

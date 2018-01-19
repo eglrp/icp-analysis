@@ -89,7 +89,8 @@ int debugReconstructRoomCorrespondences() {
 		optimizer.usePointToPlaneConstraints(false);
 		optimizer.setNbOfIterations(20);
 	}
-
+	// TODO: debug param, Remove
+	//optimizer.setNbOfIterations(1);
 	// We store the estimated camera poses.
 	std::vector<Matrix4f> estimatedPoses;
 	Matrix4f currentCameraToWorld = Matrix4f::Identity();
@@ -98,7 +99,10 @@ int debugReconstructRoomCorrespondences() {
 	SimpleMesh currentDepthMeshTargetCorres{ sensor, estimatedPoses.back(), 0.1f };
 	SimpleMesh currentCameraMeshTargetCorres = SimpleMesh::camera(estimatedPoses.back(), 0.0015f);
 	SimpleMesh resultingMeshTargetCorres = SimpleMesh::joinMeshes(currentDepthMeshTargetCorres, currentCameraMeshTargetCorres, Matrix4f::Identity());
-	resultingMeshTargetCorres.writeMesh(PROJECT_DIR + std::string("/results/target_correspondences") + std::string(".off"));
+	std::string corres_class = std::string("/Debug_Nearest_Correspondences");
+	if(PROJECTIVE)
+		corres_class = std::string("/Debug_Projective_Correspondences");
+	resultingMeshTargetCorres.writeMesh(PROJECT_DIR + std::string("/results") + corres_class + std::string("/target_correspondences") + std::string(".off"));
 
 	int i = 0;
 	const int iMax = 1;
@@ -117,7 +121,7 @@ int debugReconstructRoomCorrespondences() {
 		SimpleMesh currentDepthMeshSourceCorres{ sensor, estimatedPoses.back(), 0.1f };
 		SimpleMesh currentCameraMeshSourceCorres = SimpleMesh::camera(estimatedPoses.back(), 0.0015f);
 		SimpleMesh resultingMeshSourceCorres = SimpleMesh::joinMeshes(currentDepthMeshSourceCorres, currentCameraMeshSourceCorres, Matrix4f::Identity());
-		resultingMeshSourceCorres.writeMesh(PROJECT_DIR + std::string("/results/source_correspondences") + std::to_string(i) + std::string(".off"));
+		resultingMeshSourceCorres.writeMesh(PROJECT_DIR +  std::string("/results") + corres_class + std::string("/source_correspondences") + std::to_string(i) + std::string(".off"));
 		// Invert the transformation matrix to get the current camera pose.
 		Matrix4f currentCameraPose = currentCameraToWorld.inverse();
 		std::cout << "Current camera pose: " << std::endl << currentCameraPose << std::endl;
