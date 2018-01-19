@@ -257,6 +257,9 @@ public:
 		if(PROJECTIVE)
 		{
 			Matrix3f depthIntrinsics = target.getDepthIntrinsics();
+			std::cout << "depthIntrinsics " << depthIntrinsics <<std::endl;
+			std::cout << "target.getWidth() " << target.getWidth() <<std::endl;
+			std::cout << "target.getHeight() " << target.getHeight() <<std::endl;
 			m_nearestNeighborSearch->setDepthIntrinsicsAndRes(depthIntrinsics, target.getWidth(), target.getHeight());
 		}
 
@@ -269,10 +272,6 @@ public:
 		auto poseIncrement = PoseIncrement<double>(incrementArray);
 		poseIncrement.setZero();
 
-		std::string corres_class = std::string("/Debug_Nearest_Correspondences");
-		if(PROJECTIVE)
-			corres_class = std::string("/Debug_Projective_Correspondences");
-
 		for (int i = 0; i < m_nIterations; ++i) {
 			// Compute the matches.
 			std::cout << "iteration ..." << i <<std::endl;
@@ -281,31 +280,25 @@ public:
 
 			auto transformedPoints = transformPoints(source.getPoints(), estimatedPose);
 			std::cout << "Estimated pose: " << std::endl << estimatedPose << std::endl;
-			if(PROJECTIVE)
-			{
-				auto sourcePointIndices = source.getPointIndices();
-				m_nearestNeighborSearch->setSourceIndices(sourcePointIndices);
-			}
 			auto matches = m_nearestNeighborSearch->queryMatches(transformedPoints);
 
-			if((debugFrame > -1) && (i == 0))
+			if(debugFrame > -1 && i == 0)
 			{	
 				// SimpleMesh currentDepthMesh{ sensor, currentCameraPose, 0.1f };
 				// SimpleMesh currentCameraMesh = SimpleMesh::camera(currentCameraPose, 0.0015f);
 				// SimpleMesh resultingMesh = SimpleMesh::joinMeshes(currentDepthMesh, currentCameraMesh, Matrix4f::Identity());
-				std::cout<<"SaveCorrespondences debug"<<std::endl;
 				SimpleMesh resultingMesh;
 				std::vector<Vector3f> targetPoints = target.getPoints();
 				for (unsigned j = 0; j < transformedPoints.size(); ++j) { // sourcePoints.size()
 					const auto match = matches[j];
-					if ((match.idx >= 0) && (j%100 == 0)) {
+					if (match.idx >= 0 && (j%100 == 0)) {
 						const auto& sourcePoint = transformedPoints[j];
 						const auto& targetPoint = targetPoints[match.idx];
 						resultingMesh = SimpleMesh::joinMeshes(SimpleMesh::cylinder(sourcePoint, targetPoint, 0.002f, 2, 15), resultingMesh, Matrix4f::Identity());
 					}
 				}
 
-				resultingMesh.writeMesh(PROJECT_DIR + std::string("/results") + corres_class + std::string("/correspondences") + std::to_string(debugFrame) + std::string(".off"));
+				resultingMesh.writeMesh(PROJECT_DIR + std::string("/results/correspondences") + std::to_string(debugFrame) + std::string(".off"));
 
 			}
 

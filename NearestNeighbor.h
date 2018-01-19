@@ -113,53 +113,76 @@ private:
 		u = rint(cX + ((p.x()*fovX)/p.z()));
 		v = rint(cY + ((p.y()*fovY)/p.z()));
 
-		idx = v*m_width + u;
-		//idx = u*m_height + v;
-		if(idx<0 || idx>=m_points.size())
-		{
-			if(DEBUG){
-				std::cout<<"index: "<<idx;
-				std::cout<<"; u = "<<u;
-				//std::cout<<"; u_index = "<<m_indices[transPointIndex].y();
-				std::cout<<"; v = "<<v;
-				//std::cout<<"; v_index = "<<m_indices[transPointIndex].x();
-				std::cout<<"; p.x() = "<<p.x();
-				std::cout<<"; p.y() = "<<p.y();
-				std::cout<<"; p.z() = "<<p.z();
-				std::cout<<"; fovX = "<<fovX;
-				std::cout<<"; fovY = "<<fovY;
-				std::cout<<"; cX = "<<cX;
-				std::cout<<"; cY = "<<cY;
-				std::cout<<std::endl;
+		int radius = 5;
+		float minDist = std::numeric_limits<float>::max();
+		for(int i=u-radius; (i>=0 && i<m_width && i<=u+radius) ; i++){
+			for(int j=v-radius; (j>=0 && j<m_height && j<=v+radius); j++){
+				int temp_idx = j*m_width + i;
+				if(temp_idx<0 || temp_idx>=m_points.size()){
+					continue;
+				}
+				if(m_points[temp_idx].allFinite()){
+					float temp_dist = (p - m_points[temp_idx]).norm();
+					if(temp_dist < minDist){
+						idx = temp_idx;
+						minDist = temp_dist;
+					}
+				}
 			}
-			return Match{ -1, 0.f };
 		}
 
-		dist = (p - m_points[idx]).norm();
-
-		if (m_points[idx].allFinite()&&(dist <= m_maxDistance))
-		{
-			if(DEBUG && dist!=0){
-				count_matches_wo_dist0++;
-				std::cout<<"index: "<<idx;
-				std::cout<<"; u = "<<u;
-				std::cout<<"; u_index = "<<m_indices[transPointIndex].y();
-				std::cout<<"; v = "<<v;
-				std::cout<<"; v_index = "<<m_indices[transPointIndex].x();
-				std::cout<<"; p.x() = "<<p.x();
-				std::cout<<"; p.y() = "<<p.y();
-				std::cout<<"; p.z() = "<<p.z();
-				std::cout<<"; fovX = "<<fovX;
-				std::cout<<"; fovY = "<<fovY;
-				std::cout<<"; cX = "<<cX;
-				std::cout<<"; cY = "<<cY;
-				std::cout<<"; dist = "<<dist;
-				std::cout<<std::endl;
-			}
+		if(m_points[idx].allFinite() && minDist <= m_maxDistance){
 			return Match{ idx, 1.f };
-		}
-		else
+		}else{
 			return Match{ -1, 0.f };
+		}
+
+		// idx = v*m_width + u;
+		// if(idx<0 || idx>=m_points.size())
+		// {
+		// 	if(DEBUG){
+		// 		std::cout<<"index: "<<idx;
+		// 		std::cout<<"; u = "<<u;
+		// 		//std::cout<<"; u_index = "<<m_indices[transPointIndex].y();
+		// 		std::cout<<"; v = "<<v;
+		// 		//std::cout<<"; v_index = "<<m_indices[transPointIndex].x();
+		// 		std::cout<<"; p.x() = "<<p.x();
+		// 		std::cout<<"; p.y() = "<<p.y();
+		// 		std::cout<<"; p.z() = "<<p.z();
+		// 		std::cout<<"; fovX = "<<fovX;
+		// 		std::cout<<"; fovY = "<<fovY;
+		// 		std::cout<<"; cX = "<<cX;
+		// 		std::cout<<"; cY = "<<cY;
+		// 		std::cout<<std::endl;
+		// 	}
+		// 	return Match{ -1, 0.f };
+		// }
+
+		// dist = (p - m_points[idx]).norm();
+
+		// if (m_points[idx].allFinite()&&(dist <= m_maxDistance))
+		// {
+		// 	if(DEBUG && dist!=0){
+		// 		count_matches_wo_dist0++;
+		// 		std::cout<<"index: "<<idx;
+		// 		std::cout<<"; u = "<<u;
+		// 		std::cout<<"; u_index = "<<m_indices[transPointIndex].y();
+		// 		std::cout<<"; v = "<<v;
+		// 		std::cout<<"; v_index = "<<m_indices[transPointIndex].x();
+		// 		std::cout<<"; p.x() = "<<p.x();
+		// 		std::cout<<"; p.y() = "<<p.y();
+		// 		std::cout<<"; p.z() = "<<p.z();
+		// 		std::cout<<"; fovX = "<<fovX;
+		// 		std::cout<<"; fovY = "<<fovY;
+		// 		std::cout<<"; cX = "<<cX;
+		// 		std::cout<<"; cY = "<<cY;
+		// 		std::cout<<"; dist = "<<dist;
+		// 		std::cout<<std::endl;
+		// 	}
+		// 	return Match{ idx, 1.f };
+		// }
+		// else
+		// 	return Match{ -1, 0.f };
 	}
 };
 

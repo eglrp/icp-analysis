@@ -1,4 +1,5 @@
 data/**
+results/*.off
 #results/**
 build/**
 .vscode/**
