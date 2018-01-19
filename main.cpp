@@ -83,11 +83,11 @@ int debugReconstructRoomCorrespondences() {
 	optimizer.setMatchingMaxDistance(0.1f);
 	if (USE_POINT_TO_PLANE) {
 		optimizer.usePointToPlaneConstraints(true);
-		optimizer.setNbOfIterations(10);
+		optimizer.setNbOfIterations(1); //10
 	}
 	else {
 		optimizer.usePointToPlaneConstraints(false);
-		optimizer.setNbOfIterations(20);
+		optimizer.setNbOfIterations(1); //20
 	}
 	// TODO: debug param, Remove
 	//optimizer.setNbOfIterations(1);
@@ -405,8 +405,8 @@ int main() {
 	else if (RUN_SHAPE_ICP)
 		result = alignBunnyWithICP();
 	else if (RUN_SEQUENCE_ICP)
-		result = debugReconstructRoomCorrespondences();
-		//result = reconstructRoom();
+		//result = debugReconstructRoomCorrespondences();
+		result = reconstructRoom();
 
 	return result;
 }

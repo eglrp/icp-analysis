@@ -2,6 +2,10 @@
 #include <flann/flann.hpp>
 
 #include "Eigen.h"
+#include <math.h>
+
+#define DEBUG 0
+
 
 struct Match {
 	int idx;
@@ -19,6 +23,7 @@ public:
 	virtual void buildIndex(const std::vector<Eigen::Vector3f>& targetPoints) = 0;
 	virtual std::vector<Match> queryMatches(const std::vector<Vector3f>& transformedPoints) = 0;
 	virtual void setDepthIntrinsicsAndRes(Matrix3f depthIntrinsics, unsigned width, unsigned height) = 0;
+	virtual void setSourceIndices(std::vector<Vector2i> indices) = 0;
 
 protected:
 	float m_maxDistance;
@@ -32,6 +37,8 @@ protected:
  */
 class ProjectiveCorrespondences : public NearestNeighborSearch {
 public:
+
+	static int count_matches_wo_dist0;
 	ProjectiveCorrespondences() : NearestNeighborSearch() {}
 
 	void buildIndex(const std::vector<Eigen::Vector3f>& targetPoints) {
@@ -44,16 +51,18 @@ public:
 		const unsigned nTargetPoints = m_points.size();
 		std::cout << "total possible nMatches: " << nMatches << std::endl;
 		std::cout << "nTargetPoints: " << nTargetPoints << std::endl;
+		count_matches_wo_dist0 = 0;
 
 		int match_cnt = 0;
 
 		#pragma omp parallel for
 		for (int i = 0; i < nMatches; i++) {
-			matches[i] = getClosestPoint(transformedPoints[i]);
+			matches[i] = getClosestPoint(transformedPoints[i], i);
 			if(matches[i].idx >= 0)
 				match_cnt++;
 		}
 		std::cout << "total actual nMatches: " << match_cnt << std::endl;
+		std::cout << "total non 0 dist nMatches: " << count_matches_wo_dist0 << std::endl;
 
 		return matches;
 	}
@@ -64,14 +73,20 @@ public:
 		m_height = height;
 	}
 
+	void setSourceIndices(std::vector<Vector2i> indices){
+		m_indices = indices;
+	}
+
+
 private:
 	std::vector<Eigen::Vector3f> m_points;
+	std::vector<Vector2i> m_indices;
 
 	unsigned m_width = 0;
 	unsigned m_height = 0;	
 	Matrix3f m_depthIntrinsics = Matrix3f::Zero();
 
-	Match getClosestPoint(const Vector3f& p) {
+	Match getClosestPoint(const Vector3f& p, const int transPointIndex) {
 		int idx = -1;
 		int u=-1,v=-1;
 		float dist, fovX, fovY, cX, cY;
@@ -95,24 +110,28 @@ private:
 		cX = m_depthIntrinsics(0, 2);
 		cY = m_depthIntrinsics(1, 2);
 
-		u = cX + ((p.x()*fovX)/p.z());
-		v = cY + ((p.y()*fovY)/p.z());
+		u = rint(cX + ((p.x()*fovX)/p.z()));
+		v = rint(cY + ((p.y()*fovY)/p.z()));
 
 		idx = v*m_width + u;
 		//idx = u*m_height + v;
 		if(idx<0 || idx>=m_points.size())
 		{
-			std::cout<<"index: "<<idx;
-			std::cout<<"; u = "<<u;
-			std::cout<<"; v = "<<v;
-			std::cout<<"; p.x() = "<<p.x();
-			std::cout<<"; p.y() = "<<p.y();
-			std::cout<<"; p.z() = "<<p.z();
-			std::cout<<"; fovX = "<<fovX;
-			std::cout<<"; fovY = "<<fovY;
-			std::cout<<"; cX = "<<cX;
-			std::cout<<"; cY = "<<cY;
-			std::cout<<std::endl;
+			if(DEBUG){
+				std::cout<<"index: "<<idx;
+				std::cout<<"; u = "<<u;
+				//std::cout<<"; u_index = "<<m_indices[transPointIndex].y();
+				std::cout<<"; v = "<<v;
+				//std::cout<<"; v_index = "<<m_indices[transPointIndex].x();
+				std::cout<<"; p.x() = "<<p.x();
+				std::cout<<"; p.y() = "<<p.y();
+				std::cout<<"; p.z() = "<<p.z();
+				std::cout<<"; fovX = "<<fovX;
+				std::cout<<"; fovY = "<<fovY;
+				std::cout<<"; cX = "<<cX;
+				std::cout<<"; cY = "<<cY;
+				std::cout<<std::endl;
+			}
 			return Match{ -1, 0.f };
 		}
 
@@ -120,7 +139,23 @@ private:
 
 		if (m_points[idx].allFinite()&&(dist <= m_maxDistance))
 		{
-			//std::cout<<"index: "<<idx<<std::endl;
+			if(DEBUG && dist!=0){
+				count_matches_wo_dist0++;
+				std::cout<<"index: "<<idx;
+				std::cout<<"; u = "<<u;
+				std::cout<<"; u_index = "<<m_indices[transPointIndex].y();
+				std::cout<<"; v = "<<v;
+				std::cout<<"; v_index = "<<m_indices[transPointIndex].x();
+				std::cout<<"; p.x() = "<<p.x();
+				std::cout<<"; p.y() = "<<p.y();
+				std::cout<<"; p.z() = "<<p.z();
+				std::cout<<"; fovX = "<<fovX;
+				std::cout<<"; fovY = "<<fovY;
+				std::cout<<"; cX = "<<cX;
+				std::cout<<"; cY = "<<cY;
+				std::cout<<"; dist = "<<dist;
+				std::cout<<std::endl;
+			}
 			return Match{ idx, 1.f };
 		}
 		else
@@ -128,6 +163,7 @@ private:
 	}
 };
 
+int ProjectiveCorrespondences::count_matches_wo_dist0 =0;
 
 
 /**
@@ -162,8 +198,13 @@ public:
 			m_height = height;
 	}
 
+	void setSourceIndices(std::vector<Vector2i> indices){
+		m_indices = indices;
+	}
+
 private:
 	std::vector<Eigen::Vector3f> m_points;
+	std::vector<Vector2i> m_indices;
 
 	unsigned m_width = 0;
 	unsigned m_height = 0;	
@@ -279,11 +320,16 @@ public:
 		m_height = height;
 	}
 
+	void setSourceIndices(std::vector<Vector2i> indices){
+		m_indices = indices;
+	}
+
 private:
 
 	unsigned m_width = 0;
 	unsigned m_height = 0;	
 	Matrix3f m_depthIntrinsics = Matrix3f::Zero();
+	std::vector<Vector2i> m_indices;
 
 	int m_nTrees;
 	flann::Index<flann::L2<float>>* m_index;

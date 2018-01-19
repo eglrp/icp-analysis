@@ -122,6 +122,9 @@ public:
 			if (saveAll || (point.allFinite() && normal.allFinite())) {
 				m_points.push_back(point);
 				m_normals.push_back(normal);
+				int u = i%width;
+				int v = (i - u)/width;
+				m_point_index.push_back(Vector2i(v,u));
 			}
 		}
 	}
@@ -228,6 +231,14 @@ public:
 		return m_height;
 	}
 
+	std::vector<Vector2i>& getPointIndices() {
+		return m_point_index;
+	}
+
+	const std::vector<Vector2i>& getPointIndices() const {
+		return m_point_index;
+	}
+
 	unsigned int getClosestPoint(Vector3f& p) {
 		unsigned int idx = 0;
 
@@ -246,6 +257,7 @@ public:
 private:
 	std::vector<Vector3f> m_points;
 	std::vector<Vector3f> m_normals;
+	std::vector<Vector2i> m_point_index;
 	Matrix3f m_depthIntrinsics = Matrix3f::Zero();
 	unsigned m_width=0;
 	unsigned m_height=0;

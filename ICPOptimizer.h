@@ -12,8 +12,8 @@
 #include "PointCloud.h"
 #include "ProcrustesAligner.h"
 
-#define PROJECTIVE			0
-#define NEAREST_NEIGHBOR	1
+#define PROJECTIVE			1
+#define NEAREST_NEIGHBOR	0
 
 #define SVD		0
 #define LM		1
@@ -281,6 +281,11 @@ public:
 
 			auto transformedPoints = transformPoints(source.getPoints(), estimatedPose);
 			std::cout << "Estimated pose: " << std::endl << estimatedPose << std::endl;
+			if(PROJECTIVE)
+			{
+				auto sourcePointIndices = source.getPointIndices();
+				m_nearestNeighborSearch->setSourceIndices(sourcePointIndices);
+			}
 			auto matches = m_nearestNeighborSearch->queryMatches(transformedPoints);
 
 			if((debugFrame > -1) && (i == 0))
