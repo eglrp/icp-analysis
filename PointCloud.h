@@ -199,6 +199,24 @@ public:
 		return m_points;
 	}
 
+	std::vector<Vector3f> samplePoints(int downsampleFactor) {
+		int nPoints = m_points.size();
+		std::vector<Vector3f> downsampledPoints;
+		for (int i = 0; i < nPoints; i = i + downsampleFactor) {
+			downsampledPoints.push_back(m_points[i]);
+		}
+		return downsampledPoints;
+	}
+
+	const std::vector<Vector3f> samplePoints(int downsampleFactor) const {
+		int nPoints = m_points.size();
+		std::vector<Vector3f> downsampledPoints;
+		for (int i = 0; i < nPoints; i = i + downsampleFactor) {
+			downsampledPoints.push_back(m_points[i]);
+		}
+		return downsampledPoints;
+	}
+
 	std::vector<Vector3f>& getNormals() {
 		return m_normals;
 	}

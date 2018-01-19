@@ -399,6 +399,8 @@ int reconstructRoom2() {
 
 int main() {
 	int result = -1;
+
+	clock_t begin = clock();
 	
 	if (RUN_PROCRUSTES)
 		result = alignBunnyWithProcrustes();
@@ -407,6 +409,11 @@ int main() {
 	else if (RUN_SEQUENCE_ICP)
 		//result = debugReconstructRoomCorrespondences();
 		result = reconstructRoom();
+
+	clock_t end = clock();
+
+	double elapsedSecs = double(end - begin) / CLOCKS_PER_SEC;
+	std::cout << "Completed in " << elapsedSecs << " seconds." << std::endl;
 
 	return result;
 }

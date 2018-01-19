@@ -12,8 +12,10 @@
 #include "PointCloud.h"
 #include "ProcrustesAligner.h"
 
-#define PROJECTIVE			1
-#define NEAREST_NEIGHBOR	0
+#define PROJECTIVE			0
+#define NEAREST_NEIGHBOR	1
+
+#define HEIRARCHICAL		1
 
 #define SVD		0
 #define LM		1
@@ -277,8 +279,20 @@ public:
 			std::cout << "iteration ..." << i <<std::endl;
 			std::cout << "Matching points ..." << std::endl;
 			clock_t begin = clock();
-
-			auto transformedPoints = transformPoints(source.getPoints(), estimatedPose);
+			std::vector<Vector3f> transformedPoints;
+			if(HEIRARCHICAL){
+				if(i >= m_nIterations/2){
+					transformedPoints = transformPoints(source.samplePoints(1), estimatedPose);
+				}
+				else if(i >= m_nIterations/4){
+					transformedPoints = transformPoints(source.samplePoints(8), estimatedPose);	
+				}
+				else {
+					transformedPoints = transformPoints(source.samplePoints(16), estimatedPose);	
+				}
+			}
+			else
+				transformedPoints = transformPoints(source.getPoints(), estimatedPose);
 			std::cout << "Estimated pose: " << std::endl << estimatedPose << std::endl;
 			auto matches = m_nearestNeighborSearch->queryMatches(transformedPoints);
 
