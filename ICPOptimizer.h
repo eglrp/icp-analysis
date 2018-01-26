@@ -15,10 +15,10 @@
 #define PROJECTIVE			0
 #define NEAREST_NEIGHBOR	1
 
-#define HEIRARCHICAL		1
+#define HEIRARCHICAL		0
 
-#define SVD		0
-#define LM		1
+#define SVD		1
+#define LM		0
 
 
 /**

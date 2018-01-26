@@ -1,6 +1,6 @@
 data/**
-results/*.off
-#results/**
+#results/*.off
+results/**
 build/**
 .vscode/**
 

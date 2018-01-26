@@ -11,8 +11,8 @@
 #define USE_POINT_TO_PLANE	1
 
 #define RUN_PROCRUSTES		0
-#define RUN_SHAPE_ICP		0
-#define RUN_SEQUENCE_ICP	1
+#define RUN_SHAPE_ICP		1
+#define RUN_SEQUENCE_ICP	0
 
 void debugCorrespondenceMatching() {
 	// Load the source and target mesh.
@@ -219,11 +219,11 @@ int alignBunnyWithICP() {
 	optimizer.setMatchingMaxDistance(0.0003f);
 	if (USE_POINT_TO_PLANE) {
 		optimizer.usePointToPlaneConstraints(true);
-		optimizer.setNbOfIterations(10);
+		optimizer.setNbOfIterations(1);
 	}
 	else {
 		optimizer.usePointToPlaneConstraints(false);
-		optimizer.setNbOfIterations(20);
+		optimizer.setNbOfIterations(2);
 	}
 
 	PointCloud source{ sourceMesh };
@@ -265,10 +265,12 @@ int reconstructRoom() {
 	ICPOptimizer optimizer;
 	optimizer.setMatchingMaxDistance(0.1f);
 	if (USE_POINT_TO_PLANE) {
+		std::cout<<"POINT TO PLANE"<<std::endl;
 		optimizer.usePointToPlaneConstraints(true);
 		optimizer.setNbOfIterations(10);
 	}
 	else {
+		std::cout<<"POINT TO POINT"<<std::endl;
 		optimizer.usePointToPlaneConstraints(false);
 		optimizer.setNbOfIterations(20);
 	}
