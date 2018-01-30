@@ -204,6 +204,19 @@ int alignBunnyWithICP() {
 	//const std::string filenameSource = PROJECT_DIR + std::string("/data/bunny/bunny_part1.off");
 	//const std::string filenameTarget = PROJECT_DIR + std::string("/data/bunny/bunny_part2_trans.off");
 
+	// Fill in the matched points: sourcePoints[i] is matched with targetPoints[i].
+	std::vector<Vector3f> sourcePoints; 
+	sourcePoints.push_back(Vector3f(-0.0106867f, 0.179756f, -0.0283248f)); // left ear
+	sourcePoints.push_back(Vector3f(-0.0639191f, 0.179114f, -0.0588715f)); // right ear
+	sourcePoints.push_back(Vector3f(0.0590575f, 0.066407f, 0.00686641f)); // tail
+	sourcePoints.push_back(Vector3f(-0.0789843f, 0.13256f, 0.0519517f)); // mouth
+	
+	std::vector<Vector3f> targetPoints;
+	targetPoints.push_back(Vector3f(-0.02744f, 0.179958f, 0.00980739f)); // left ear
+	targetPoints.push_back(Vector3f(-0.0847672f, 0.180632f, -0.0148538f)); // right ear
+	targetPoints.push_back(Vector3f(0.0544159f, 0.0715162f, 0.0231181f)); // tail
+	targetPoints.push_back(Vector3f(-0.0854079f, 0.10966f, 0.0842135f)); // mouth
+
 	SimpleMesh sourceMesh;
 	if (!sourceMesh.loadMesh(filenameSource)) {
 		std::cout << "Mesh file wasn't read successfully at location: " << filenameSource << std::endl;
@@ -221,11 +234,11 @@ int alignBunnyWithICP() {
 	optimizer.setMatchingMaxDistance(0.0003f);
 	if (USE_POINT_TO_PLANE) {
 		optimizer.usePointToPlaneConstraints(true);
-		optimizer.setNbOfIterations(15);
+		optimizer.setNbOfIterations(10);
 	}
 	else {
 		optimizer.usePointToPlaneConstraints(false);
-		optimizer.setNbOfIterations(25);
+		optimizer.setNbOfIterations(20);
 	}
 
 	PointCloud source{ sourceMesh };
@@ -234,10 +247,33 @@ int alignBunnyWithICP() {
 	Matrix4f estimatedPose = optimizer.estimatePose(source, target);
 	std::cout << "Estimated pose: " << std::endl << estimatedPose << std::endl;
 	
-	// Visualize the resulting joined mesh. We add triangulated spheres for point matches.
+	// Visualize the resulting joined mesh. 
 	SimpleMesh resultingMesh = SimpleMesh::joinMeshes(sourceMesh, targetMesh, estimatedPose);
 	resultingMesh.writeMesh(PROJECT_DIR + std::string("/results/bunny_icp.off"));
 	std::cout << "Resulting mesh written." << std::endl;	
+
+	// Visualize the resulting joined mesh. We add triangulated spheres for point matches.
+	std::vector<Vector3f> transformedSourcePoints; 
+	const auto rotation = estimatedPose.block(0, 0, 3, 3);
+	const auto translation = estimatedPose.block(0, 3, 3, 1);
+	float error=0;
+	int i=0;
+	for (const auto& sourcePoint : sourcePoints) {
+		resultingMesh = SimpleMesh::joinMeshes(SimpleMesh::sphere(sourcePoint, 0.002f), resultingMesh, estimatedPose);
+		transformedSourcePoints.push_back(rotation * sourcePoint + translation);
+		float error_point = (transformedSourcePoints[i] - targetPoints[i]).norm();
+		std::cout<<"Error for point "<<(i+1)<<" : "<<error_point<<std::endl;
+		error += error_point;
+		i++;
+	}
+	std::cout<<"Error calculated: "<<error<<std::endl;
+	for (const auto& targetPoint : targetPoints) {
+		resultingMesh = SimpleMesh::joinMeshes(SimpleMesh::sphere(targetPoint, 0.002f, { 0, 255, 0, 255 }), resultingMesh, Matrix4f::Identity());
+	}
+
+
+	resultingMesh.writeMesh(PROJECT_DIR + std::string("/results/bunny_icp_spheres.off"));
+	std::cout << "Resulting mesh written." << std::endl;
 
 	return 0;
 }
