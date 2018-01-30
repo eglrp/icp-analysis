@@ -1,0 +1,30 @@
+Initializing FLANN index with 2503 points.
+FLANN index created.
+iteration ...0
+Matching points ...
+Estimated pose: 
+1 0 0 0
+0 1 0 0
+0 0 1 0
+0 0 0 1
+Completed in 0.007593 seconds.
+Enter SVD 
+Number of matched points ...1883
+	Start Estimating Pose 
+   0.999883  0.00718447  -0.0134597
+-0.00721725    0.999971  -0.0023851
+  0.0134421  0.00248193    0.999907
+Optimization iteration done.
+Estimated pose: 
+    0.999883   0.00718447   -0.0134597 -0.000704186
+ -0.00721725     0.999971   -0.0023851 -0.000503436
+   0.0134421   0.00248193     0.999907   0.00468162
+           0            0            0            1
+Resulting mesh written.
+Error for point 1 : 0.0375905
+Error for point 2 : 0.0455622
+Error for point 3 : 0.0129586
+Error for point 4 : 0.0368685
+Error calculated: 0.13298
+Resulting mesh written.
+Completed in 0.094909 seconds.

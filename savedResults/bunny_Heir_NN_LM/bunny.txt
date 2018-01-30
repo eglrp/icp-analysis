@@ -1,0 +1,145 @@
+Initializing FLANN index with 2503 points.
+FLANN index created.
+iteration ...0
+Matching points ...
+Estimated pose: 
+1 0 0 0
+0 1 0 0
+0 0 1 0
+0 0 0 1
+Completed in 0.000535 seconds.
+iter      cost      cost_change  |gradient|   |step|    tr_ratio  tr_radius  ls_iter  iter_time  total_time
+   0  9.183040e-03    0.00e+00    9.13e-01   0.00e+00   0.00e+00  1.00e+04        0    6.24e-04    6.81e-04
+   1  6.500298e-03    2.68e-03    5.11e-04   2.53e-02   1.00e+00  3.00e+04        1    6.32e-04    1.35e-03
+Ceres Solver Report: Iterations: 2, Initial cost: 9.183040e-03, Final cost: 6.500298e-03, Termination: NO_CONVERGENCE
+Optimization iteration done.
+iteration ...1
+Matching points ...
+Estimated pose: 
+    0.999698   0.00138295   -0.0245377 -0.000225933
+ -0.00142856     0.999997  -0.00184146 -0.000744619
+   0.0245351   0.00187596     0.999697    0.0057612
+           0            0            0            1
+Completed in 0.000494 seconds.
+iter      cost      cost_change  |gradient|   |step|    tr_ratio  tr_radius  ls_iter  iter_time  total_time
+   0  6.722004e-03    0.00e+00    8.39e-01   0.00e+00   0.00e+00  1.00e+04        0    2.62e-04    2.86e-04
+   1  4.626163e-03    2.10e-03    3.38e-03   2.15e-02   1.00e+00  3.00e+04        1    4.21e-04    7.28e-04
+Ceres Solver Report: Iterations: 2, Initial cost: 6.722004e-03, Final cost: 4.626163e-03, Termination: NO_CONVERGENCE
+Optimization iteration done.
+iteration ...2
+Matching points ...
+Estimated pose: 
+     0.99979  -0.00354376   -0.0201688 -0.000355198
+  0.00309461     0.999747   -0.0222573  -0.00121518
+   0.0202426    0.0221902     0.999549   0.00860977
+           0            0            0            1
+Completed in 0.000828 seconds.
+iter      cost      cost_change  |gradient|   |step|    tr_ratio  tr_radius  ls_iter  iter_time  total_time
+   0  1.265503e-02    0.00e+00    1.49e+00   0.00e+00   0.00e+00  1.00e+04        0    5.73e-04    6.36e-04
+   1  9.080243e-03    3.57e-03    1.81e-02   3.52e-02   1.00e+00  3.00e+04        1    8.91e-04    1.55e-03
+Ceres Solver Report: Iterations: 2, Initial cost: 1.265503e-02, Final cost: 9.080243e-03, Termination: NO_CONVERGENCE
+Optimization iteration done.
+iteration ...3
+Matching points ...
+Estimated pose: 
+    0.999967  -0.00714386  -0.00385049 -0.000819902
+  0.00692859     0.998555   -0.0532864  -0.00168741
+   0.0042256    0.0532579     0.998572   0.00915871
+           0            0            0            1
+Completed in 0.000768 seconds.
+iter      cost      cost_change  |gradient|   |step|    tr_ratio  tr_radius  ls_iter  iter_time  total_time
+   0  9.209264e-03    0.00e+00    9.35e-01   0.00e+00   0.00e+00  1.00e+04        0    4.40e-04    5.00e-04
+   1  7.175744e-03    2.03e-03    2.09e-02   3.66e-02   1.00e+00  3.00e+04        1    1.45e-03    1.98e-03
+Ceres Solver Report: Iterations: 2, Initial cost: 9.209264e-03, Final cost: 7.175744e-03, Termination: NO_CONVERGENCE
+Optimization iteration done.
+iteration ...4
+Matching points ...
+Estimated pose: 
+    0.99984  -0.0123795   0.0129148 -0.00127223
+   0.013437    0.996265  -0.0852979 -0.00196274
+ -0.0118106   0.0854578    0.996272  0.00811625
+          0           0           0           1
+Completed in 0.000914 seconds.
+iter      cost      cost_change  |gradient|   |step|    tr_ratio  tr_radius  ls_iter  iter_time  total_time
+   0  7.258392e-03    0.00e+00    6.56e-01   0.00e+00   0.00e+00  1.00e+04        0    4.22e-04    4.73e-04
+   1  5.437056e-03    1.82e-03    2.42e-02   4.05e-02   9.99e-01  3.00e+04        1    8.44e-04    1.33e-03
+Ceres Solver Report: Iterations: 2, Initial cost: 7.258392e-03, Final cost: 5.437056e-03, Termination: NO_CONVERGENCE
+Optimization iteration done.
+iteration ...5
+Matching points ...
+Estimated pose: 
+   0.999038  -0.0279583   0.0337717 -0.00102772
+  0.0316923    0.992786   -0.115637 -0.00178815
+  -0.030295    0.116596    0.992717  0.00638764
+          0           0           0           1
+Completed in 0.004348 seconds.
+iter      cost      cost_change  |gradient|   |step|    tr_ratio  tr_radius  ls_iter  iter_time  total_time
+   0  4.135458e-02    0.00e+00    3.73e+00   0.00e+00   0.00e+00  1.00e+04        0    2.10e-03    2.55e-03
+   1  3.013926e-02    1.12e-02    1.46e-01   3.74e-02   1.00e+00  3.00e+04        1    3.84e-03    6.41e-03
+Ceres Solver Report: Iterations: 2, Initial cost: 4.135458e-02, Final cost: 3.013926e-02, Termination: NO_CONVERGENCE
+Optimization iteration done.
+iteration ...6
+Matching points ...
+Estimated pose: 
+    0.997363    -0.041493    0.0595409 -0.000886451
+   0.0493927     0.989197    -0.138019  -0.00140019
+  -0.0531709     0.140596     0.988638   0.00465903
+           0            0            0            1
+Completed in 0.003953 seconds.
+iter      cost      cost_change  |gradient|   |step|    tr_ratio  tr_radius  ls_iter  iter_time  total_time
+   0  2.200969e-02    0.00e+00    2.19e+00   0.00e+00   0.00e+00  1.00e+04        0    1.89e-03    2.31e-03
+   1  1.663960e-02    5.37e-03    7.48e-02   2.67e-02   9.99e-01  3.00e+04        1    5.19e-03    7.52e-03
+Ceres Solver Report: Iterations: 2, Initial cost: 2.200969e-02, Final cost: 1.663960e-02, Termination: NO_CONVERGENCE
+Optimization iteration done.
+iteration ...7
+Matching points ...
+Estimated pose: 
+   0.995623   -0.051182   0.0782031 -0.00077054
+  0.0627371    0.986189   -0.153285 -0.00113956
+ -0.0692776     0.15752    0.985083  0.00333784
+          0           0           0           1
+Completed in 0.004721 seconds.
+iter      cost      cost_change  |gradient|   |step|    tr_ratio  tr_radius  ls_iter  iter_time  total_time
+   0  1.265463e-02    0.00e+00    1.31e+00   0.00e+00   0.00e+00  1.00e+04        0    1.64e-03    2.10e-03
+   1  9.665604e-03    2.99e-03    4.58e-02   2.11e-02   9.98e-01  3.00e+04        1    3.89e-03    6.02e-03
+Ceres Solver Report: Iterations: 2, Initial cost: 1.265463e-02, Final cost: 9.665604e-03, Termination: NO_CONVERGENCE
+Optimization iteration done.
+iteration ...8
+Matching points ...
+Estimated pose: 
+    0.994035    -0.059502    0.0914044 -0.000550614
+   0.0741421     0.983301      -0.1662  -0.00083552
+  -0.0799888     0.171985     0.981847   0.00208564
+           0            0            0            1
+Completed in 0.0034 seconds.
+iter      cost      cost_change  |gradient|   |step|    tr_ratio  tr_radius  ls_iter  iter_time  total_time
+   0  7.075399e-03    0.00e+00    1.14e+00   0.00e+00   0.00e+00  1.00e+04        0    1.66e-03    2.13e-03
+   1  4.700482e-03    2.37e-03    3.86e-02   1.94e-02   9.99e-01  3.00e+04        1    4.10e-03    6.28e-03
+Ceres Solver Report: Iterations: 2, Initial cost: 7.075399e-03, Final cost: 4.700482e-03, Termination: NO_CONVERGENCE
+Optimization iteration done.
+iteration ...9
+Matching points ...
+Estimated pose: 
+    0.992247   -0.0669474      0.10471 -0.000368562
+   0.0848129     0.980596    -0.176746 -0.000443065
+  -0.0908451     0.184257     0.978671  0.000990018
+           0            0            0            1
+Completed in 0.003185 seconds.
+iter      cost      cost_change  |gradient|   |step|    tr_ratio  tr_radius  ls_iter  iter_time  total_time
+   0  2.426931e-03    0.00e+00    1.45e+00   0.00e+00   0.00e+00  1.00e+04        0    1.63e-03    2.76e-03
+   1  5.541479e-04    1.87e-03    3.31e-02   1.64e-02   1.00e+00  3.00e+04        1    4.26e-03    7.04e-03
+Ceres Solver Report: Iterations: 2, Initial cost: 2.426931e-03, Final cost: 5.541479e-04, Termination: NO_CONVERGENCE
+Optimization iteration done.
+Estimated pose: 
+    0.990856   -0.0741188     0.112742 -4.08089e-05
+   0.0944947      0.97766    -0.187753 -9.43971e-05
+  -0.0963072     0.196689     0.975724  0.000140718
+           0            0            0            1
+Resulting mesh written.
+Error for point 1 : 0.000964358
+Error for point 2 : 0.00191718
+Error for point 3 : 0.00922085
+Error for point 4 : 0.00410221
+Error calculated: 0.0162046
+Resulting mesh written.
+Completed in 0.220743 seconds.
