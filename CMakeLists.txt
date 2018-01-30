@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8)
-project(exercise_3)
+project(icp_analysis)
 
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake ${CMAKE_MODULE_PATH})
 set(CMAKE_CXX_FLAGS "-std=c++14 ${CMAKE_CXX_FLAGS}")
@@ -36,5 +36,5 @@ set(SOURCE_FILES
     FreeImageHelper.cpp
 )
 
-add_executable(exercise_3 main.cpp ${HEADER_FILES} ${SOURCE_FILES})
-target_link_libraries(exercise_3 ${FREEIMAGE_LIBRARIES} ${FLANN_LIBRARIES} ${CERES_LIBRARIES})
+add_executable(icp_analysis main.cpp ${HEADER_FILES} ${SOURCE_FILES})
+target_link_libraries(icp_analysis ${FREEIMAGE_LIBRARIES} ${FLANN_LIBRARIES} ${CERES_LIBRARIES})
