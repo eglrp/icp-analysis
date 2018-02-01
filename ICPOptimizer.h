@@ -17,8 +17,8 @@
 
 #define HEIRARCHICAL		0
 
-#define SVD		0
-#define LM		1
+#define SVD		1
+#define LM		0
 
 
 /**

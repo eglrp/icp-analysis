@@ -60,11 +60,15 @@ private:
 			_X(i,2) = normalizedPoint.z();
 		}
 		
-		Matrix3f m = X.transpose()*_X;
-		JacobiSVD<MatrixXf> svd(m, ComputeFullU | ComputeFullV);
-		rotation = svd.matrixU()*svd.matrixV().transpose();
+		// Matrix3f m = X.transpose()*_X;
+		// JacobiSVD<MatrixXf> svd(m, ComputeFullU | ComputeFullV);
+		// rotation = svd.matrixU()*svd.matrixV().transpose();
+
+		JacobiSVD<MatrixXf> svd(_X.transpose()*_X, ComputeFullU | ComputeFullV);
+		rotation = svd.solve(_X.transpose()*X).transpose();
+
 		// JacobiSVD<MatrixXf> svd(_X, ComputeFullU | ComputeFullV);
-		// rotation = svd.solve(X);
+		// rotation = svd.solve(X).transpose();
 		std::cout<<rotation<<std::endl;
 		return rotation;
 	}
