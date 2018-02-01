@@ -61,11 +61,10 @@ private:
 		}
 		
 		Matrix3f m = X.transpose()*_X;
-		// std::cout<<m<<std::endl;
 		JacobiSVD<MatrixXf> svd(m, ComputeFullU | ComputeFullV);
-		// std::cout<<svd.matrixU()<<std::endl;
-		// std::cout<<svd.matrixV().transpose()<<std::endl;
 		rotation = svd.matrixU()*svd.matrixV().transpose();
+		// JacobiSVD<MatrixXf> svd(_X, ComputeFullU | ComputeFullV);
+		// rotation = svd.solve(X);
 		std::cout<<rotation<<std::endl;
 		return rotation;
 	}
