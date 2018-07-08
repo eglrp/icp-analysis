@@ -3,8 +3,8 @@ Analysis of Iterative Closest Point
 
 This project evaluates several algorithms for iterative closest point. To compile and run this project, follow the instructions from linux_installation.txt. This project has been implemented with equal contributions from [Neha Das](https://github.com/neha191091) and [Sumit Dugar](https://github.com/dugarsumit)
 
-The following poster showcases the experiments and the results from this project:
-
+The following poster (Click [here](https://github.com/neha191091/icp-analysis/blob/master/documents/icp-final-poster.pdf) for the PDF version) showcases the experiments and the results from this project:
+![poster](https://github.com/neha191091/icp-analysis/blob/master/documents/poster.jpg)
 
 We referenced and re-used some code from the exercises from the lecture "3D Scanning and Motion Capture" offered by the Computer Graphics and Visualization Group at the Technical University Munich in creating this project.
 
